@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nossa História</title>
-    <link rel="preconnect" href="https://googleapis.com">
-    <link rel="preconnect" href="https://gstatic.com" crossorigin>
-    <link href="https://googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #fcfbfa;
@@ -30,7 +30,6 @@
             min-height: 100vh;
         }
 
-        /* Menu Hambúrguer */
         .menu-btn {
             position: fixed;
             top: 20px;
@@ -112,11 +111,10 @@
             padding: 5px;
         }
 
-        /* Layout Principal */
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 80px 20px;
             text-align: center;
         }
 
@@ -152,7 +150,6 @@
             background-color: var(--accent-color);
         }
 
-        /* Editor do Álbum */
         #editor-section {
             display: none;
             margin-top: 40px;
@@ -232,7 +229,6 @@
             color: white;
         }
 
-        /* Link de Compartilhamento */
         #share-section {
             display: none;
             margin-top: 30px;
@@ -241,7 +237,6 @@
             border-radius: 4px;
         }
 
-        /* Animação do Livro Abrindo */
         #intro-animation-section {
             display: none;
             position: fixed;
@@ -301,11 +296,10 @@
 
         @keyframes fadeIn { to { opacity: 1; } }
 
-        /* Exibição do Livro Virtual (Flip Book) */
         #viewer-section {
             display: none;
             margin: 40px auto;
-            max-width: 500px;
+            max-width: 700px;
             position: relative;
         }
 
@@ -318,6 +312,7 @@
             position: relative;
             overflow: hidden;
             border-radius: 4px;
+            padding: 10px;
         }
 
         .view-page {
@@ -371,4 +366,152 @@
             background: none;
             border: none;
             font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
 
+        @media (max-width: 600px) {
+            .container { padding-top: 120px; }
+            .flip-book { height: 380px; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Abrir menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+
+<aside class="sidebar" id="sidebar">
+    <h2>Álbuns</h2>
+    <ul class="album-list" id="albumList">
+        <li class="album-item">Álbum de Exemplo <button class="delete-album-btn" title="Excluir">Excluir</button></li>
+    </ul>
+    <button class="secondary-btn" id="closeSidebar">Fechar</button>
+</aside>
+
+<main class="container">
+    <header>
+        <h1>Nossa História</h1>
+        <p>Crie e compartilhe memórias em um livro virtual.</p>
+    </header>
+
+    <button class="main-btn" id="openViewer">Abrir Livro</button>
+
+    <section id="intro-animation-section">
+        <div class="book-animation">
+            <div class="book-page"></div>
+            <div class="book-page"></div>
+            <div class="book-page"></div>
+        </div>
+        <div class="intro-text">Bem-vindo ao seu livro de memórias. Clique em "Abrir Livro" para começar.</div>
+        <button class="secondary-btn" id="closeIntro">Continuar</button>
+    </section>
+
+    <section id="viewer-section">
+        <div class="flip-book" id="flipBook">
+            <div class="view-page active" data-index="0">
+                <img class="view-img" src="https://via.placeholder.com/600x280?text=Foto+1" alt="Foto 1">
+                <div class="view-caption">Legenda da foto 1</div>
+            </div>
+            <div class="view-page" data-index="1">
+                <img class="view-img" src="https://via.placeholder.com/600x280?text=Foto+2" alt="Foto 2">
+                <div class="view-caption">Legenda da foto 2</div>
+            </div>
+            <div class="view-page" data-index="2">
+                <img class="view-img" src="https://via.placeholder.com/600x280?text=Foto+3" alt="Foto 3">
+                <div class="view-caption">Legenda da foto 3</div>
+            </div>
+        </div>
+
+        <div class="nav-arrows">
+            <button class="arrow-btn" id="prevBtn" aria-label="Página anterior">◀</button>
+            <button class="arrow-btn" id="nextBtn" aria-label="Próxima página">▶</button>
+        </div>
+    </section>
+
+    <section id="share-section">
+        <p>Compartilhe este livro copiando o link abaixo:</p>
+        <input type="text" readonly value="" id="shareLink" style="width:100%;padding:8px;border:1px solid var(--border-color);border-radius:4px;">
+    </section>
+</main>
+
+<script>
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const closeSidebar = document.getElementById('closeSidebar');
+    const openViewer = document.getElementById('openViewer');
+    const viewerSection = document.getElementById('viewer-section');
+    const introSection = document.getElementById('intro-animation-section');
+    const closeIntro = document.getElementById('closeIntro');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pages = Array.from(document.querySelectorAll('.view-page'));
+    let current = 0;
+
+    function safe(el) {
+        return el !== null && typeof el !== 'undefined';
+    }
+
+    if (safe(menuBtn) && safe(sidebar)) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
+
+    if (safe(closeSidebar) && safe(sidebar)) {
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+        });
+    }
+
+    if (safe(openViewer) && safe(introSection) && safe(viewerSection)) {
+        openViewer.addEventListener('click', () => {
+            introSection.style.display = 'flex';
+            viewerSection.style.display = 'none';
+        });
+    }
+
+    if (safe(closeIntro) && safe(introSection) && safe(viewerSection)) {
+        closeIntro.addEventListener('click', () => {
+            introSection.style.display = 'none';
+            viewerSection.style.display = 'block';
+            const shareInput = document.getElementById('shareLink');
+            if (shareInput) shareInput.value = location.href;
+        });
+    }
+
+    function showPage(index) {
+        if (!pages || pages.length === 0) return;
+        if (index < 0) index = 0;
+        if (index >= pages.length) index = pages.length - 1;
+        pages.forEach(page => page.classList.remove('active'));
+        pages[index].classList.add('active');
+        current = index;
+    }
+
+    if (safe(prevBtn)) {
+        prevBtn.addEventListener('click', () => showPage(current - 1));
+    }
+
+    if (safe(nextBtn)) {
+        nextBtn.addEventListener('click', () => showPage(current + 1));
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') showPage(current - 1);
+        if (event.key === 'ArrowRight') showPage(current + 1);
+        if (event.key === 'Escape' && safe(sidebar)) sidebar.classList.remove('active');
+    });
+
+    window.addEventListener('load', () => {
+        if (introSection) introSection.style.display = 'none';
+        if (viewerSection) viewerSection.style.display = 'none';
+        showPage(0);
+    });
+</script>
+
+</body>
+</html>
